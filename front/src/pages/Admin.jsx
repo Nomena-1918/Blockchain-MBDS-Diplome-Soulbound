@@ -1,58 +1,12 @@
 import { useState } from 'react'
-
-const MetaMaskIcon = ({ size = 40 }) => (
-  <svg width={size} height={size} viewBox="0 0 35 33" xmlns="http://www.w3.org/2000/svg">
-    <polygon points="32.9582,0.5 19.1945,10.3304 21.6875,4.3877" fill="#E2761B" stroke="#E2761B" strokeLinecap="round" strokeLinejoin="round"/>
-    <polygon points="2.0332,0.5 15.6986,10.4258 13.3039,4.3877" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
-    <polygon points="28.0098,23.5334 24.2891,29.3398 32.1738,31.5117 34.4375,23.6587" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
-    <polygon points="0.5742,23.6587 2.8262,31.5117 10.7109,29.3398 6.9902,23.5334" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-)
-const LockIcon = ({ size = 40 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#8898d4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-  </svg>
-)
-const UploadIcon = ({ size = 28 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
-    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
-  </svg>
-)
-const PlusIcon = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-  </svg>
-)
-const ListIcon = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-    <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
-  </svg>
-)
-const ExternalLinkIcon = ({ size = 13 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-  </svg>
-)
-const CheckIcon = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-)
-const XIcon = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-  </svg>
-)
+import { MetaMaskIcon, LockIcon, UploadIcon, PlusIcon, ListIcon, ExternalLinkIcon, CheckIcon, XIcon } from '../components/Icons.jsx'
+import { mintDiploma } from '../utils/contract.js'
 
 const RECENT_DIPLOMAS_MOCK = [
-  { name: 'John Doe',   degree: 'L3 - Web Intégration et Web Designer',   date: '28/05/2026', mention: 'TB' },
-  { name: 'Marie Dupont',  degree: 'L3 - Base de données et Réseaux',            date: '27/05/2026', mention: 'B'  },
-  { name: 'Jean Rakoto',   degree: 'L3 - Design et Communication Digital', date: '26/05/2026', mention: 'AB' },
-  { name: 'Aicha Diallo',  degree: 'L3 - Web Intégration et Web Designer',    date: '25/05/2026', mention: 'TB' },
+  { name: 'John Doe',      degree: 'L3 - Web Intégration et Web Designer',   date: '28/05/2026', mention: 'TB' },
+  { name: 'Marie Dupont',  degree: 'L3 - Base de données et Réseaux',         date: '27/05/2026', mention: 'B'  },
+  { name: 'Jean Rakoto',   degree: 'L3 - Design et Communication Digital',   date: '26/05/2026', mention: 'AB' },
+  { name: 'Aicha Diallo',  degree: 'L3 - Web Intégration et Web Designer',   date: '25/05/2026', mention: 'TB' },
 ]
 
 const MENTION_BADGE = {
@@ -93,7 +47,7 @@ export default function Admin({ walletAddress, isOwner }) {
     return (
       <main className="page-wrapper" style={{ textAlign: 'center', paddingTop: 80 }}>
         <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}>
-          <LockIcon size={52} />
+          <LockIcon size={52} color="#8898d4" />
         </div>
         <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: '#283a97' }}>Accès refusé</h2>
         <p style={{ color: '#555' }}>Seul le propriétaire du contrat (l'université) peut accéder à cette page.</p>
@@ -112,6 +66,7 @@ export default function Admin({ walletAddress, isOwner }) {
     setPdfFile(file)
     setIpfsCid('')
     setUploading(true)
+    // Dev 3 branchera la logique réelle de téléversement ici
     await new Promise(r => setTimeout(r, 1200))
     setIpfsCid('QmX9bJX3kFRs7tWvFp1LkGz8mN5sQ2yRhTc4wU6vD8eA1b')
     setUploading(false)
@@ -129,13 +84,19 @@ export default function Admin({ walletAddress, isOwner }) {
     setMinting(true)
     setMintError('')
     setTxHash('')
-    // TODO: brancher mintDiploma() depuis utils/contract.js
-    await new Promise(r => setTimeout(r, 1500))
-    setTxHash('0xSIMULATED_' + Date.now())
-    setForm({ studentAddress: '', studentName: '', degree: 'Licence en Informatique - Option Web Intégration et Web Designer', mention: 'Très Bien', year: '2026' })
-    setPdfFile(null)
-    setIpfsCid('')
-    setMinting(false)
+
+    try {
+      const hash = await mintDiploma(form.studentAddress, ipfsCid)
+      setTxHash(hash)
+      setForm({ studentAddress: '', studentName: '', degree: 'Licence en Informatique - Option Web Intégration et Web Designer', mention: 'Très Bien', year: '2026' })
+      setPdfFile(null)
+      setIpfsCid('')
+    } catch (err) {
+      console.error(err)
+      setMintError(err.reason || err.message || "La transaction a été rejetée ou a échoué.")
+    } finally {
+      setMinting(false)
+    }
   }
 
   return (
