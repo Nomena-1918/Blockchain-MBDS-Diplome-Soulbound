@@ -1,27 +1,8 @@
 import { Link, useLocation } from 'react-router-dom'
+import { MetaMaskIcon, LockIcon } from './Icons.jsx'
 
 const shortenAddress = (addr) =>
   addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : ''
-
-const MetaMaskIcon = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 35 33" xmlns="http://www.w3.org/2000/svg">
-    <polygon points="32.9582,0.5 19.1945,10.3304 21.6875,4.3877" fill="#E2761B" stroke="#E2761B" strokeLinecap="round" strokeLinejoin="round"/>
-    <polygon points="2.0332,0.5 15.6986,10.4258 13.3039,4.3877" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
-    <polygon points="28.0098,23.5334 24.2891,29.3398 32.1738,31.5117 34.4375,23.6587" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
-    <polygon points="0.5742,23.6587 2.8262,31.5117 10.7109,29.3398 6.9902,23.5334" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
-    <polygon points="10.2734,14.5654 8.0625,17.9277 15.8906,18.2832 15.623,9.8643" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
-    <polygon points="24.7168,14.5654 19.2734,9.7578 19.1094,18.2832 26.9277,17.9277" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
-    <polygon points="10.7109,29.3398 15.4121,27.0527 11.3672,23.7129" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
-    <polygon points="19.5879,27.0527 24.2891,29.3398 23.623,23.7129" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-)
-
-const LockIcon = ({ size = 13 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-  </svg>
-)
 
 export default function Navbar({ walletAddress, setWalletAddress, isOwner, setIsOwner }) {
   const { pathname } = useLocation()
@@ -32,10 +13,43 @@ export default function Navbar({ walletAddress, setWalletAddress, isOwner, setIs
         alert("MetaMask non détecté. Installez l'extension sur https://metamask.io")
         return
       }
+
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' })
+      
+      if (chainId !== '0xf31075' && chainId !== '11155111') {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0xf31075' }],
+          })
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0xf31075',
+                  chainName: 'Sepolia Test Network',
+                  nativeCurrency: { name: 'Sepolia Ether', symbol: 'ETH', decimals: 18 },
+                  rpcUrls: ['https://ethereum-sepolia-rpc.publicnode.com'],
+                  blockExplorerUrls: ['https://sepolia.etherscan.io']
+                }]
+              })
+            } catch (addError) {
+              alert("Veuillez configurer et basculer sur le réseau Sepolia dans votre wallet.")
+              return
+            }
+          } else {
+            alert("Veuillez basculer sur le réseau Sepolia dans votre wallet.")
+            return
+          }
+        }
+      }
       setWalletAddress(accounts[0])
     } catch (err) {
-      alert("Impossible de se connecter à MetaMask.")
+      console.error(err)
+      alert("Impossible de se connecter à MetaMask ou de changer de réseau.")
     }
   }
 
