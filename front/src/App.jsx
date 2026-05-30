@@ -26,22 +26,26 @@ export default function App() {
   // Écoute les événements MetaMask
   useEffect(() => {
     if (window.ethereum) {
-      // 1. Récupère le compte déjà connecté
-      window.ethereum.request({ method: 'eth_accounts' })
-        .then(accounts => {
-          if (accounts.length > 0) {
-            setWalletAddress(accounts[0])
-          }
-        })
-        .catch(err => console.error("Erreur eth_accounts:", err))
+      // 1. Récupère le compte déjà connecté si l'utilisateur a choisi de se connecter
+      if (localStorage.getItem('wallet_connected') === 'true') {
+        window.ethereum.request({ method: 'eth_accounts' })
+          .then(accounts => {
+            if (accounts.length > 0) {
+              setWalletAddress(accounts[0])
+            }
+          })
+          .catch(err => console.error("Erreur eth_accounts:", err))
+      }
 
       // 2. Écouteur changement de compte
       const handleAccounts = (accounts) => {
         if (accounts.length > 0) {
           setWalletAddress(accounts[0])
+          localStorage.setItem('wallet_connected', 'true')
         } else {
           setWalletAddress(null)
           setIsOwner(false)
+          localStorage.removeItem('wallet_connected')
         }
       }
 

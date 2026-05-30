@@ -47,6 +47,7 @@ export default function Navbar({ walletAddress, setWalletAddress, isOwner, setIs
         }
       }
       setWalletAddress(accounts[0])
+      localStorage.setItem('wallet_connected', 'true')
     } catch (err) {
       console.error(err)
       alert("Impossible de se connecter à MetaMask ou de changer de réseau.")
@@ -56,6 +57,7 @@ export default function Navbar({ walletAddress, setWalletAddress, isOwner, setIs
   const handleDisconnect = () => {
     setWalletAddress(null)
     setIsOwner(false)
+    localStorage.removeItem('wallet_connected')
   }
 
   return (
