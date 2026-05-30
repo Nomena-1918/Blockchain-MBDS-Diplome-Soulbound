@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import DiplomaCard from '../components/DiplomaCard.jsx'
 import { fetchDiploma } from '../utils/contract.js'
-import { MetaMaskIcon, LinkIcon, LockIcon, LoaderIcon } from '../components/Icons.jsx'
+import { MetaMaskIcon, LinkIcon, LockIcon, LoaderIcon, BookIcon, ChainIcon } from '../components/Icons.jsx'
 
 export default function Student({ walletAddress }) {
   const [diploma, setDiploma] = useState(null)

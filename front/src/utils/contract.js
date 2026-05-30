@@ -11,18 +11,61 @@ export function formatIpfsUrl(ipfsUrl) {
 
 // Récupère le provider ou le signer MetaMask
 export async function getProviderOrSigner(useSigner = false) {
-  if (!window.ethereum) {
-    if (useSigner) {
+  // Détecte si on utilise l'adresse locale Hardhat par défaut
+  const isLocalhost = CONTRACT_ADDRESS.toLowerCase() === "0x5fbdb2315678afecb367f032d93f642f64180aa3";
+
+  if (useSigner) {
+    if (!window.ethereum) {
       throw new Error("MetaMask n'est pas installé.");
     }
-    return new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
-  }
-
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  if (useSigner) {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    
+    // Si on n'est pas en local (on est sur Sepolia réel), on valide/force le réseau
+    if (!isLocalhost) {
+      const network = await provider.getNetwork();
+      if (Number(network.chainId) !== 11155111) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0xf31075' }], // 11155111 en hex
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0xf31075',
+                  chainName: 'Sepolia Test Network',
+                  nativeCurrency: { name: 'Sepolia Ether', symbol: 'ETH', decimals: 18 },
+                  rpcUrls: ['https://ethereum-sepolia-rpc.publicnode.com'],
+                  blockExplorerUrls: ['https://sepolia.etherscan.io']
+                }]
+              });
+            } catch (addError) {
+              throw new Error("Veuillez configurer et basculer sur le réseau Sepolia dans votre wallet.");
+            }
+          } else {
+            throw new Error("Veuillez basculer sur le réseau Sepolia dans votre wallet.");
+          }
+        }
+      }
+    }
     return await provider.getSigner();
   }
-  return provider;
+
+  // Pour la lecture seule :
+  // Si on est en local, on utilise le provider MetaMask ou un RPC local
+  if (isLocalhost) {
+    if (window.ethereum) {
+      return new ethers.BrowserProvider(window.ethereum);
+    }
+    return new ethers.JsonRpcProvider("http://127.0.0.1:8545");
+  }
+
+  // Sur Sepolia réel, on utilise TOUJOURS le provider RPC public
+  // pour que la recherche et la consultation fonctionnent indépendamment du réseau MetaMask actif.
+  return new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
 }
 
 // Initialise l'instance du Smart Contract
