@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { MetaMaskIcon, LockIcon, UploadIcon, PlusIcon, ListIcon, ExternalLinkIcon, CheckIcon, XIcon } from '../components/Icons.jsx'
 import { mintDiploma } from '../utils/contract.js'
+import { uploadFileToPinata, uploadMetadataToPinata } from '../utils/ipfs.js'
 
 const RECENT_DIPLOMAS_MOCK = [
   { name: 'John Doe',      degree: 'L3 - Web Intégration et Web Designer',   date: '28/05/2026', mention: 'TB' },
@@ -25,7 +26,7 @@ export default function Admin({ walletAddress, isOwner }) {
     year:           '2026',
   })
   const [pdfFile, setPdfFile]     = useState(null)
-  const [ipfsCid, setIpfsCid]     = useState('')
+  const [pdfCid, setPdfCid]       = useState('')
   const [uploading, setUploading] = useState(false)
   const [minting, setMinting]     = useState(false)
   const [txHash, setTxHash]       = useState('')
@@ -64,16 +65,21 @@ export default function Admin({ walletAddress, isOwner }) {
       return
     }
     setPdfFile(file)
-    setIpfsCid('')
+    setPdfCid('')
     setUploading(true)
-    // Dev 3 branchera la logique réelle de téléversement ici
-    await new Promise(r => setTimeout(r, 1200))
-    setIpfsCid('QmX9bJX3kFRs7tWvFp1LkGz8mN5sQ2yRhTc4wU6vD8eA1b')
-    setUploading(false)
+    try {
+      const cid = await uploadFileToPinata(file)
+      setPdfCid(cid)
+    } catch (err) {
+      console.error(err)
+      alert(`Erreur upload IPFS: ${err.message}`)
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleMint = async () => {
-    if (!form.studentAddress || !form.studentName || !ipfsCid) {
+    if (!form.studentAddress || !form.studentName || !pdfCid) {
       alert('Veuillez remplir tous les champs et uploader le PDF sur IPFS.')
       return
     }
@@ -86,11 +92,24 @@ export default function Admin({ walletAddress, isOwner }) {
     setTxHash('')
 
     try {
-      const hash = await mintDiploma(form.studentAddress, ipfsCid)
+      const metadata = {
+        name: `Diplôme de ${form.studentName}`,
+        description: form.degree,
+        image: `ipfs://${pdfCid}`,
+        attributes: [
+          { trait_type: 'Student Name', value: form.studentName },
+          { trait_type: 'Degree',       value: form.degree },
+          { trait_type: 'Mention',      value: form.mention },
+          { trait_type: 'Year',         value: form.year },
+          { trait_type: 'PDF CID',      value: pdfCid },
+        ],
+      }
+      const metadataCid = await uploadMetadataToPinata(metadata)
+      const hash = await mintDiploma(form.studentAddress, metadataCid)
       setTxHash(hash)
       setForm({ studentAddress: '', studentName: '', degree: 'Licence en Informatique - Option Web Intégration et Web Designer', mention: 'Très Bien', year: '2026' })
       setPdfFile(null)
-      setIpfsCid('')
+      setPdfCid('')
     } catch (err) {
       console.error(err)
       setMintError(err.reason || err.message || "La transaction a été rejetée ou a échoué.")
@@ -222,10 +241,10 @@ export default function Admin({ walletAddress, isOwner }) {
               Upload sur IPFS en cours…
             </div>
           )}
-          {ipfsCid && (
+          {pdfCid && (
             <div className="form-group">
               <label>CID IPFS (généré automatiquement)</label>
-              <div className="cid-box mono">{ipfsCid}</div>
+              <div className="cid-box mono">{pdfCid}</div>
             </div>
           )}
 
@@ -233,7 +252,7 @@ export default function Admin({ walletAddress, isOwner }) {
             className="btn-primary"
             style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 15 }}
             onClick={handleMint}
-            disabled={minting || uploading || !ipfsCid}
+            disabled={minting || uploading || !pdfCid}
           >
             <img src="/itu_icon_white.svg" alt="" width="16" style={{ flexShrink: 0 }} />
             {minting ? 'Transaction en cours…' : 'Émettre le diplôme (Mint SBT)'}
