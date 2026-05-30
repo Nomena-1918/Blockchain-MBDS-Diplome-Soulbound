@@ -15,7 +15,7 @@ export default function App() {
     async function checkOwnerStatus() {
       if (walletAddress) {
         const ownerStatus = await isContractOwner(walletAddress)
-        setIsOwner(true)
+        setIsOwner(ownerStatus)
       } else {
         setIsOwner(false)
       }

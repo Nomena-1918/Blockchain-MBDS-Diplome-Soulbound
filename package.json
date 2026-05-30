@@ -1,0 +1,21 @@
+{
+  "name": "blockchain-mbds-diplome-soulbound",
+  "version": "1.0.0",
+  "description": "Smart contracts pour la certification académique via SBT",
+  "main": "index.js",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "deploy:local": "npx hardhat run scripts/deploy.js --network localhost",
+    "deploy:sepolia": "npx hardhat run scripts/deploy.js --network sepolia",
+    "node": "npx hardhat node"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.2"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.2",
+    "dotenv": "^16.4.5"
+  }
+}
